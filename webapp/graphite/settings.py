@@ -52,6 +52,9 @@ DATA_DIRS = []
 
 CLUSTER_SERVERS = []
 
+# List of path expressions that will be blacklisted from running
+BLACKLIST_EXPR = []
+
 sys.path.insert(0, WEBAPP_DIR)
 # Allow local versions of the libs shipped in thirdparty to take precedence
 sys.path.append(THIRDPARTY_DIR)
@@ -249,3 +252,6 @@ if SECRET_KEY == 'UNSAFE_DEFAULT':
   warn('SECRET_KEY is set to an unsafe default. This should be set in local_settings.py for better security')
 
 USE_TZ = True
+
+# Sorted list for faster evaluations
+BLACKLIST_EXPR.sort()

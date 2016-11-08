@@ -1,5 +1,6 @@
 import datetime
 import time
+import bisect
 from django.conf import settings
 from graphite.render.grammar import grammar
 from graphite.render.datalib import fetchData, TimeSeries
@@ -21,6 +22,8 @@ def evaluateTokens(requestContext, tokens):
     return evaluateTokens(requestContext, tokens.expression)
 
   elif tokens.pathExpression:
+    if isBlacklisted(tokens.pathExpression):
+      raise Exception("Blacklisted query: %s" % tokens.pathExpression)
     return fetchData(requestContext, tokens.pathExpression)
 
   elif tokens.call:
@@ -67,6 +70,17 @@ def extractPathExpressions(targets):
   s = set(pathExpressions)
   pathExpressions = list(s)
   return pathExpressions
+
+
+def isBlacklisted(pathExpr):
+  """Return true if this pathExpr is in the blacklist, false otherwise."""
+
+  # settings.BLACKLIST_EXPR is already sorted
+  i = bisect.bisect_right(settings.BLACKLIST_EXPR, pathExpr)
+  if i > 0:
+    return pathExpr.startswith(settings.BLACKLIST_EXPR[i-1])
+
+  return False
 
 
 #Avoid import circularities
